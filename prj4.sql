@@ -1,3 +1,4 @@
+-- prj4.sql
 
 -- drop tables --
 drop table user_product_settings;

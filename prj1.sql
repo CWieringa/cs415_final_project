@@ -1,3 +1,5 @@
+-- prj1.sql
+
 -- USERS: stores application users
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
