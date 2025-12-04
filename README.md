@@ -15,7 +15,51 @@
 *
 
 ```mermaid
+erDiagram
 
+    USERS {
+        INT id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password_hash
+        DATETIME created_at
+    }
+
+    PRODUCT {
+        INT id PK
+        INT user_id FK
+        BOOLEAN scraping
+        BOOLEAN favorite
+        VARCHAR product
+        VARCHAR description
+        VARCHAR code
+        VARCHAR weight
+        VARCHAR link
+    }
+
+    PRODUCT_DATA {
+        INT id PK
+        INT product_id FK
+        VARCHAR code
+        DATETIME timestamp
+        INT price_cents
+        VARCHAR price_per
+        INT stock
+        VARCHAR out_stock
+    }
+
+    USER_PRODUCT_SETTINGS {
+        INT id PK
+        INT user_id FK
+        INT product_id FK
+        BOOLEAN notify_low_stock
+        BOOLEAN track_price
+    }
+
+    USERS ||--o{ PRODUCT : "has many"
+    PRODUCT ||--o{ PRODUCT_DATA : "has many"
+    USERS ||--o{ USER_PRODUCT_SETTINGS : "customizes"
+    PRODUCT ||--o{ USER_PRODUCT_SETTINGS : "customized by"
 ```
 ---
 
