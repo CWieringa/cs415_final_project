@@ -1,6 +1,6 @@
 -- prj1.sql
 
--- USERS: stores application users
+-- USERS --
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -8,47 +8,46 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX (username)
-)ENGINE=InnoDB;
+) ENGINE=InnoDB;
 
--- PRODUCT: user defined product entries
-CREATE TABLE product (
+
+-- PRODUCT_CATALOG --
+CREATE TABLE product_catalog (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(255),
+    code VARCHAR(20) NOT NULL UNIQUE,
+    weight VARCHAR(50),
+    link VARCHAR(250)
+) ENGINE=InnoDB;
+
+
+-- USER_PRODUCT --
+CREATE TABLE user_product (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
+    product_id INT NOT NULL,
     scraping BOOLEAN DEFAULT TRUE,
     favorite BOOLEAN DEFAULT FALSE,
-    product VARCHAR(50),
-    description VARCHAR(200),
-    code VARCHAR(10),
-    weight VARCHAR(50),
-    link VARCHAR(250),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX (user_id),
-    INDEX (product)
-)ENGINE=InnoDB;
+    notify_low_stock BOOLEAN DEFAULT FALSE,
+    track_price BOOLEAN DEFAULT TRUE,
 
--- PRODUCT_DATA: scraped results for products
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES product_catalog(id) ON DELETE CASCADE,
+
+    UNIQUE (user_id, product_id)
+) ENGINE=InnoDB;
+
+
+-- PRODUCT_DATA --
 CREATE TABLE product_data (
     id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT NOT NULL,
-    code VARCHAR(10),
-    timestamp DATETIME,
+    timestamp DATETIME NOT NULL,
     price_cents INT,
-    price_per VARCHAR(20),
     stock INT,
-    out_stock VARCHAR(30),
-    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE,
+
+    FOREIGN KEY (product_id) REFERENCES product_catalog(id) ON DELETE CASCADE,
     INDEX (product_id),
     INDEX (timestamp)
-)ENGINE=InnoDB;
-
--- USER_PRODUCT_SETTINGS: optional customization of product tracking per user
-CREATE TABLE user_product_settings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    product_id INT NOT NULL,
-    notify_low_stock BOOLEAN DEFAULT FALSE,
-    track_price BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE,
-    UNIQUE (user_id, product_id)
-)ENGINE=InnoDB;
+) ENGINE=InnoDB;
