@@ -1,7 +1,7 @@
 -- prj4.sql
 
 -- drop tables --
-drop table user_product;
-drop table product_data;
-drop table product_catalog;
-drop table users;
+DROP TABLE user_product;
+DROP TABLE product_data;
+DROP TABLE product_catalog;
+DROP TABLE users;
