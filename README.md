@@ -1182,7 +1182,10 @@ MariaDB [CS415]> SELECT user_id, product_id, track_price
 
 ## Reports
 
+I used PowerBI for my graph and table. The first graph displays each product by average price and weight. This displays what products are the most expensive or cheapest for their weight. The second table shows the lowest stock quanity that product ever had while being recorded. It displays the amount as well as the year, month, and day it happened on.
+
 **Price & Weight Graph**
+
 ![Price & Weight Graph](productGraph.png "Price & Weight Graph")
 
 **Price & Weight Graph**
@@ -1191,6 +1194,7 @@ MariaDB [CS415]> SELECT user_id, product_id, track_price
 ---
 
 **Minimum Stock Table**
+
 ![Minimum Stock Table](minStockTable.png "Minimum Stock Table")
 
 **Minimum Stock Table**
@@ -1204,10 +1208,10 @@ MariaDB [CS415]> SELECT user_id, product_id, track_price
 -- prj4.sql
 
 -- drop tables --
-drop table user_product_settings;
-drop table product_data;
-drop table product;
-drop table users;
+DROP TABLE user_product;
+DROP TABLE product_data;
+DROP TABLE product_catalog;
+DROP TABLE users;
 
 ```
 
