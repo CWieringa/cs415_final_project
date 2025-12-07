@@ -1182,11 +1182,19 @@ MariaDB [CS415]> SELECT user_id, product_id, track_price
 
 ## Reports
 
-**PowerBI Graph**
-![PowerBI Graph](productGraph.png "PowerBI Graph")
+**Price & Weight Graph**
+![Price & Weight Graph](productGraph.png "Price & Weight Graph")
 
-**PowerBI Graph**
-[PowerBI Graph](productGraph.png "PowerBI Graph")
+**Price & Weight Graph**
+[link](productGraph.png "Price & Weight Graph")
+
+---
+
+**Minimum Stock Table**
+![Minimum Stock Table](minStockTable.png "Minimum Stock Table")
+
+**Minimum Stock Table**
+[link](minStockTable.png "Minimum Stock Table")
 
 ---
 
