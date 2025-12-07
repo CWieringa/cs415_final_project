@@ -1183,6 +1183,7 @@ MariaDB [CS415]> SELECT user_id, product_id, track_price
 ## Reports
 
 **Price & Weight Graph**
+
 ![Price & Weight Graph](productGraph.png "Price & Weight Graph")
 
 **Price & Weight Graph**
@@ -1191,6 +1192,7 @@ MariaDB [CS415]> SELECT user_id, product_id, track_price
 ---
 
 **Minimum Stock Table**
+
 ![Minimum Stock Table](minStockTable.png "Minimum Stock Table")
 
 **Minimum Stock Table**
