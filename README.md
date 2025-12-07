@@ -992,82 +992,70 @@ ORDER BY u.username;
 
 ---
 
-## Query 7 – `UPDATE` query CONTINUE FROM HERE
+## Query 7 – `UPDATE` query
 
-This `UPDATE` marks the “Campus Creek Clean-Up” project as **Active** (`status = 'A'`). This is the kind of change staff would make when a project moves from planning to active fundraising. The `SELECT` before and after helps you verify the update worked.
+Update notify_low_stock for a user-product pair. Used when a user decides to turn notifications for low stock on or off.
 
 ```sql
--- Query 7: UPDATE a project’s status from Planned ('P') to Active ('A')
+SELECT user_id, product_id, notify_low_stock
+FROM user_product
+WHERE user_id = 1 AND product_id = 2;
 
--- Check current status
-SELECT pid, name, status
-FROM project
-WHERE pid = 2;
+UPDATE user_product
+SET notify_low_stock = TRUE
+WHERE user_id = 1 AND product_id = 2;
 
--- Perform the update
-UPDATE project
-SET status = 'A'
-WHERE pid = 2;
-
--- Verify the change
-SELECT pid, name, status
-FROM project
-WHERE pid = 2;
+SELECT user_id, product_id, notify_low_stock
+FROM user_product
+WHERE user_id = 1 AND product_id = 2;
 ```
 
 **Sample Output**
 ```code
-+-----+-----------------------+--------+
-| pid | name                  | status |
-+-----+-----------------------+--------+
-|   2 | Campus Creek Clean-Up | P      |
-+-----+-----------------------+--------+
++---------+------------+------------------+
+| user_id | product_id | notify_low_stock |
++---------+------------+------------------+
+|       1 |          2 |                0 |
++---------+------------+------------------+
 
-+-----+-----------------------+--------+
-| pid | name                  | status |
-+-----+-----------------------+--------+
-|   2 | Campus Creek Clean-Up | A      |
-+-----+-----------------------+--------+
++---------+------------+------------------+
+| user_id | product_id | notify_low_stock |
++---------+------------+------------------+
+|       1 |          2 |                1 |
++---------+------------+------------------+
 ```
 
 ---
 
-## Query 8 – `DELETE` query (remove a specific donation)
+## Query 8 – `DELETE` query
 
-This query deletes a **single donation record** (for example, if it was entered by mistake). We first show the row we’re about to delete, run the `DELETE`, and then show that it has been removed. Because of the foreign key constraints, we’re deleting from `donation` only (not `member` or `project`).
+Remove a product from a user's tracking list. For when a user no longer wants to track a product.
 
 
 ```sql
--- Query 8: DELETE a single donation (e.g., did = 100)
+SELECT user_id, product_id, notify_low_stock
+FROM user_product
+WHERE user_id = 3 AND product_id = 5;
 
--- Show the donation we plan to delete
-SELECT did, mid, pid, amount, received
-FROM donation
-WHERE did = 100;
+DELETE FROM user_product
+WHERE user_id = 3 AND product_id = 5;
 
--- Delete the row
-DELETE FROM donation
-WHERE did = 100;
-
--- Confirm it is gone
-SELECT did, mid, pid, amount, received
-FROM donation
-WHERE did = 100;
+SELECT user_id, product_id, notify_low_stock
+FROM user_product
+WHERE user_id = 3 AND product_id = 5;
 ```
 
 **Sample Output**
 ```code
-+-----+-----+-----+--------+------------+
-| did | mid | pid | amount | received   |
-+-----+-----+-----+--------+------------+
-| 100 |  20 |   2 |  60.00 | 2025-05-11 |
-+-----+-----+-----+--------+------------+
-1 row in set (0.000 sec)
++---------+------------+------------------+
+| user_id | product_id | notify_low_stock |
++---------+------------+------------------+
+|       3 |          5 |                1 |
++---------+------------+------------------+
 
-SELECT did, mid, pid, amount, received
-    -> FROM donation
-    -> WHERE did = 100;
-
+    -> SELECT user_id, product_id, notify_low_stock
+    -> FROM user_product
+    -> WHERE user_id = 3 AND product_id = 5;
 Empty set (0.001 sec)
 ```
 
@@ -1075,145 +1063,130 @@ Empty set (0.001 sec)
 
 ## Query 9 – Create a `VIEW` and use it
 
-This query creates a view called `donation_details` that joins member names and project names with each donation. Views like this simplify complex joins and make it easier to reuse the same “logical table” in reports or applications.
+Create a simplified view of users favorite products with latest price and stock. Makes a convenient dashboard.
 
 ```sql
--- Query 9: Create a VIEW and then select from it
+CREATE VIEW user_favorites_latest AS
+SELECT u.username, pc.name AS product_name, pd.price_cents, pd.stock
+FROM users u
+JOIN user_product up ON u.id = up.user_id
+JOIN product_catalog pc ON up.product_id = pc.id
+JOIN product_data pd ON pc.id = pd.product_id
+WHERE up.favorite = TRUE
+AND pd.timestamp = (SELECT MAX(timestamp) FROM product_data WHERE product_id = pc.id);
 
--- Create the view (run once)
-CREATE OR REPLACE VIEW donation_details AS
-SELECT
-    d.did,
-    m.first,
-    m.last,
-    p.name AS project_name,
-    d.amount,
-    d.received
-FROM donation d
-JOIN member  m ON d.mid = m.mid
-JOIN project p ON d.pid = p.pid;
-
--- Use the view
-SELECT *
-FROM donation_details
-ORDER BY did;
+SELECT * FROM user_favorites_latest;
 ```
 
 **Sample Output**
-
-    +-----+--------+---------+-----------------------+--------+------------+
-    | did | first  | last    | project_name          | amount | received   |
-    +-----+--------+---------+-----------------------+--------+------------+
-    |   1 | Jeff   | Lehman  | HU Food Pantry        |  25.00 | 2025-02-01 |
-    |   2 | Lisa   | Smith   | HU Food Pantry        |  50.00 | 2025-02-02 |
-    |   3 | Mark   | Wenger  | HU Food Pantry        | 100.00 | 2025-02-03 |
-    |   4 | Sarah  | Johnson | Campus Creek Clean-Up |  20.00 | 2025-02-04 |
-    |   5 | Caleb  | Brown   | Campus Creek Clean-Up |  40.00 | 2025-02-05 |
-    ...
-    |   6 | Hannah | Miller  | Community Garden      |  30.00 | 2025-02-06 |
-    |   7 | David  | Peters  | Community Garden      |  75.00 | 2025-02-07 |
-    |   8 | Maria  | Lopez   | Kids Coding Camp      | 150.00 | 2025-02-08 |
-    |   9 | Ethan  | Garrett | Kids Coding Camp      |  25.00 | 2025-02-09 |
-    |  10 | Olivia | Turner  | Habitat Build Day     |  50.00 | 2025-02-10 |
-    +-----+--------+---------+-----------------------+--------+------------+
-    99 rows in set (0.012 sec)
-
+```code
++----------+-----------------+-------------+-------+
+| username | product_name    | price_cents | stock |
++----------+-----------------+-------------+-------+
+| clay     | Oats            |        2985 |   101 |
+| david    | Oats            |        2985 |   101 |
+| ben      | Oats            |        2985 |   101 |
+| ben      | Chicken Wheat   |        3305 |  1220 |
+| clay     | Alfalfa         |        3080 |   920 |
+| ben      | Whole Corn      |        2445 |   470 |
+| clay     | Sunflower Seeds |        5505 |    87 |
++----------+-----------------+-------------+-------+
+```
 ---
 
 ## Query 10 – Transaction with `ROLLBACK`
 
-This example shows a transaction where we **temporarily increase** the goal for “HU Food Pantry” by $500, check the result, and then `ROLLBACK` so the change does not stick. This pattern is useful when testing changes or when multiple updates must either all succeed or all be undone.
+Safely updates the track_price for several products. Rollback undoes the decision and price tracking goes back to normal.
 
 ```sql
--- Query 10: Demonstrate a transaction with ROLLBACK
-
--- Check original goal
-SELECT pid, name, goal
-FROM project
-WHERE pid = 1;
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 
 START TRANSACTION;
 
--- Temporarily increase the goal by $500
-UPDATE project
-SET goal = goal + 500
-WHERE pid = 1;
+UPDATE user_product
+SET track_price = FALSE
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 
--- See the changed value inside the transaction
-SELECT pid, name, goal
-FROM project
-WHERE pid = 1;
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 
--- Decide to undo the change
 ROLLBACK;
 
--- Confirm the goal is back to the original value
-SELECT pid, name, goal
-FROM project
-WHERE pid = 1;
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 ```
 
 ---
 
 **Sample Output**
 ```code
-MariaDB [test]> -- Query 10: Demonstrate a transaction with ROLLBACK
-MariaDB [test]>
-MariaDB [test]> -- Check original goal
-MariaDB [test]> SELECT pid, name, goal
-    -> FROM project
-    -> WHERE pid = 1;
-+-----+----------------+---------+
-| pid | name           | goal    |
-+-----+----------------+---------+
-|   1 | HU Food Pantry | 5000.00 |
-+-----+----------------+---------+
-1 row in set (0.000 sec)
++---------+------------+-------------+
+| user_id | product_id | track_price |
++---------+------------+-------------+
+|       2 |          1 |           1 |
+|       2 |          3 |           1 |
+|       2 |          5 |           1 |
++---------+------------+-------------+
+3 rows in set (0.001 sec)
 
-MariaDB [test]>
-MariaDB [test]> START TRANSACTION;
+MariaDB [CS415]> 
+MariaDB [CS415]> START TRANSACTION;
 Query OK, 0 rows affected (0.000 sec)
 
-MariaDB [test]>
-MariaDB [test]> -- Temporarily increase the goal by $500
-MariaDB [test]> UPDATE project
-    -> SET goal = goal + 500
-    -> WHERE pid = 1;
-Query OK, 1 row affected (0.001 sec)
-Rows matched: 1  Changed: 1  Warnings: 0
+MariaDB [CS415]> 
+MariaDB [CS415]> -- Temporarily set track_price to FALSE
+MariaDB [CS415]> UPDATE user_product
+    -> SET track_price = FALSE
+    -> WHERE user_id = 2 AND product_id IN (1, 3, 5);
+Query OK, 3 rows affected (0.000 sec)
+Rows matched: 3  Changed: 3  Warnings: 0
 
-MariaDB [test]>
-MariaDB [test]> -- See the changed value inside the transaction
-MariaDB [test]> SELECT pid, name, goal
-    -> FROM project
-    -> WHERE pid = 1;
-+-----+----------------+---------+
-| pid | name           | goal    |
-+-----+----------------+---------+
-|   1 | HU Food Pantry | 5500.00 |
-+-----+----------------+---------+
-1 row in set (0.000 sec)
+MariaDB [CS415]> 
+MariaDB [CS415]> -- See the changed values inside the transaction
+MariaDB [CS415]> SELECT user_id, product_id, track_price
+    -> FROM user_product
+    -> WHERE user_id = 2 AND product_id IN (1, 3, 5);
++---------+------------+-------------+
+| user_id | product_id | track_price |
++---------+------------+-------------+
+|       2 |          1 |           0 |
+|       2 |          3 |           0 |
+|       2 |          5 |           0 |
++---------+------------+-------------+
+3 rows in set (0.000 sec)
 
-MariaDB [test]>
-MariaDB [test]> -- Decide to undo the change
-MariaDB [test]> ROLLBACK;
-Query OK, 0 rows affected (0.001 sec)
+MariaDB [CS415]> 
+MariaDB [CS415]> -- Decide to undo the change
+MariaDB [CS415]> ROLLBACK;
+Query OK, 0 rows affected (0.000 sec)
 
-MariaDB [test]>
-MariaDB [test]> -- Confirm the goal is back to the original value
-MariaDB [test]> SELECT pid, name, goal
-    -> FROM project
-    -> WHERE pid = 1;
-+-----+----------------+---------+
-| pid | name           | goal    |
-+-----+----------------+---------+
-|   1 | HU Food Pantry | 5000.00 |
-+-----+----------------+---------+
-1 row in set (0.000 sec)
+MariaDB [CS415]> 
+MariaDB [CS415]> -- Confirm track_price is back to the original values
+MariaDB [CS415]> SELECT user_id, product_id, track_price
+    -> FROM user_product
+    -> WHERE user_id = 2 AND product_id IN (1, 3, 5);
++---------+------------+-------------+
+| user_id | product_id | track_price |
++---------+------------+-------------+
+|       2 |          1 |           1 |
+|       2 |          3 |           1 |
+|       2 |          5 |           1 |
++---------+------------+-------------+
+3 rows in set (0.001 sec)
 ```
 ---
 
 ## Reports
+
+**PowerBI Graph**
+![PowerBI Graph](productGraph.png "PowerBI Graph")
+
+**PowerBI Graph**
+[PowerBI Graph](productGraph.png "PowerBI Graph")
 
 ---
 
