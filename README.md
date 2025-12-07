@@ -1094,100 +1094,99 @@ SELECT * FROM user_favorites_latest;
 ```
 ---
 
-## Query 10 – Transaction with `ROLLBACK` CONTINUE FROM HERE
+## Query 10 – Transaction with `ROLLBACK`
 
-This example shows a transaction where we **temporarily increase** the goal for “HU Food Pantry” by $500, check the result, and then `ROLLBACK` so the change does not stick. This pattern is useful when testing changes or when multiple updates must either all succeed or all be undone.
+Safely updates the track_price for several products. Rollback undoes the decision and price tracking goes back to normal.
 
 ```sql
--- Query 10: Demonstrate a transaction with ROLLBACK
-
--- Check original goal
-SELECT pid, name, goal
-FROM project
-WHERE pid = 1;
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 
 START TRANSACTION;
 
--- Temporarily increase the goal by $500
-UPDATE project
-SET goal = goal + 500
-WHERE pid = 1;
+UPDATE user_product
+SET track_price = FALSE
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 
--- See the changed value inside the transaction
-SELECT pid, name, goal
-FROM project
-WHERE pid = 1;
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 
--- Decide to undo the change
 ROLLBACK;
 
--- Confirm the goal is back to the original value
-SELECT pid, name, goal
-FROM project
-WHERE pid = 1;
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 ```
 
 ---
 
 **Sample Output**
 ```code
-MariaDB [test]> -- Query 10: Demonstrate a transaction with ROLLBACK
-MariaDB [test]>
-MariaDB [test]> -- Check original goal
-MariaDB [test]> SELECT pid, name, goal
-    -> FROM project
-    -> WHERE pid = 1;
-+-----+----------------+---------+
-| pid | name           | goal    |
-+-----+----------------+---------+
-|   1 | HU Food Pantry | 5000.00 |
-+-----+----------------+---------+
-1 row in set (0.000 sec)
++---------+------------+-------------+
+| user_id | product_id | track_price |
++---------+------------+-------------+
+|       2 |          1 |           1 |
+|       2 |          3 |           1 |
+|       2 |          5 |           1 |
++---------+------------+-------------+
+3 rows in set (0.001 sec)
 
-MariaDB [test]>
-MariaDB [test]> START TRANSACTION;
+MariaDB [CS415]> 
+MariaDB [CS415]> START TRANSACTION;
 Query OK, 0 rows affected (0.000 sec)
 
-MariaDB [test]>
-MariaDB [test]> -- Temporarily increase the goal by $500
-MariaDB [test]> UPDATE project
-    -> SET goal = goal + 500
-    -> WHERE pid = 1;
-Query OK, 1 row affected (0.001 sec)
-Rows matched: 1  Changed: 1  Warnings: 0
+MariaDB [CS415]> 
+MariaDB [CS415]> -- Temporarily set track_price to FALSE
+MariaDB [CS415]> UPDATE user_product
+    -> SET track_price = FALSE
+    -> WHERE user_id = 2 AND product_id IN (1, 3, 5);
+Query OK, 3 rows affected (0.000 sec)
+Rows matched: 3  Changed: 3  Warnings: 0
 
-MariaDB [test]>
-MariaDB [test]> -- See the changed value inside the transaction
-MariaDB [test]> SELECT pid, name, goal
-    -> FROM project
-    -> WHERE pid = 1;
-+-----+----------------+---------+
-| pid | name           | goal    |
-+-----+----------------+---------+
-|   1 | HU Food Pantry | 5500.00 |
-+-----+----------------+---------+
-1 row in set (0.000 sec)
+MariaDB [CS415]> 
+MariaDB [CS415]> -- See the changed values inside the transaction
+MariaDB [CS415]> SELECT user_id, product_id, track_price
+    -> FROM user_product
+    -> WHERE user_id = 2 AND product_id IN (1, 3, 5);
++---------+------------+-------------+
+| user_id | product_id | track_price |
++---------+------------+-------------+
+|       2 |          1 |           0 |
+|       2 |          3 |           0 |
+|       2 |          5 |           0 |
++---------+------------+-------------+
+3 rows in set (0.000 sec)
 
-MariaDB [test]>
-MariaDB [test]> -- Decide to undo the change
-MariaDB [test]> ROLLBACK;
-Query OK, 0 rows affected (0.001 sec)
+MariaDB [CS415]> 
+MariaDB [CS415]> -- Decide to undo the change
+MariaDB [CS415]> ROLLBACK;
+Query OK, 0 rows affected (0.000 sec)
 
-MariaDB [test]>
-MariaDB [test]> -- Confirm the goal is back to the original value
-MariaDB [test]> SELECT pid, name, goal
-    -> FROM project
-    -> WHERE pid = 1;
-+-----+----------------+---------+
-| pid | name           | goal    |
-+-----+----------------+---------+
-|   1 | HU Food Pantry | 5000.00 |
-+-----+----------------+---------+
-1 row in set (0.000 sec)
+MariaDB [CS415]> 
+MariaDB [CS415]> -- Confirm track_price is back to the original values
+MariaDB [CS415]> SELECT user_id, product_id, track_price
+    -> FROM user_product
+    -> WHERE user_id = 2 AND product_id IN (1, 3, 5);
++---------+------------+-------------+
+| user_id | product_id | track_price |
++---------+------------+-------------+
+|       2 |          1 |           1 |
+|       2 |          3 |           1 |
+|       2 |          5 |           1 |
++---------+------------+-------------+
+3 rows in set (0.001 sec)
 ```
 ---
 
 ## Reports
+
+**PowerBI Graph**
+![PowerBI Graph](productGraph.png "PowerBI Graph")
+
+**PowerBI Graph**
+[PowerBI Graph](productGraph.png "PowerBI Graph")
 
 ---
 
