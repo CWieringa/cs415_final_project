@@ -68,10 +68,10 @@ erDiagram
 
 This database contains 4 normalized tables that work together to store user and product data. Each table stores specific data. Users contains the users of the service. Product_catalog contains all of the products the service is scraping. User_product has all the associations between users and the products. Product_data has all the data scraped for each product. Together these tables provide a very useful database for prodcut and stock tracking.
 
-A major descision during the normalization process was not to normalize the weight column. In the real world this column also holds liquid weight, so it is used specifically for informational purposes. Previously there was no product_catalog table, adding that has really improved my data storage efficiency, as the normalization reduced the quainity of repeat data scrapes I had. This also drastically reduced the size of the product_data table, which makes it much easier to navigate.
+A major descision during the normalization process was not to normalize the weight column. In the real world this column also holds liquid weight, so it is used specifically for informational purposes. Previously there was no product_catalog table, adding that has really improved my data storage efficiency, as the normalization reduced the quantity of repeat data scrapes I had. This also drastically reduced the size of the product_data table, which makes it much easier to navigate.
 
 `users`
-stores the user data for the database. It's used for log in purposes and so that a user can track specific products to them.
+stores the user data for the database. It's used for log in purposes and so that a user can track their own specific products.
 
 `product_catalog`
 contains all the products going to be scraped. It also contains all of their data such as description, weight, link, etc.
@@ -1209,10 +1209,12 @@ I used PowerBI for my graph and table. The first graph displays each product by 
 -- prj4.sql
 
 -- drop tables --
+DROP VIEW user_favorites_latest;
 DROP TABLE user_product;
 DROP TABLE product_data;
 DROP TABLE product_catalog;
 DROP TABLE users;
+
 
 ```
 
