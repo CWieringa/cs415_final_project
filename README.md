@@ -1220,7 +1220,7 @@ DROP TABLE users;
 
 ## Poster
 
-[Poster PDF](poster.pdf)
+[Poster PDF](Final_Project-CS415.pdf)
 
 ---
 
