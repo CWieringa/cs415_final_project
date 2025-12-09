@@ -30,7 +30,7 @@ GROUP BY pc.name
 HAVING AVG(pd.price_cents) / 100.0 > 50;
 
 -- Query 5 --
-SELECT u.username, pc.name AS product_name, pd.price_cents, pd.stock
+SELECT u.username, pc.name AS product_name, pd.timestamp ,pd.price_cents, pd.stock
 FROM users u
 INNER JOIN user_product up ON u.id = up.user_id
 INNER JOIN product_catalog pc ON up.product_id = pc.id
@@ -46,12 +46,28 @@ LEFT JOIN product_catalog pc ON up.product_id = pc.id
 ORDER BY u.username;
 
 -- Query 7 --
+SELECT user_id, product_id, notify_low_stock
+FROM user_product
+WHERE user_id = 1 AND product_id = 2;
+
 UPDATE user_product
 SET notify_low_stock = TRUE
 WHERE user_id = 1 AND product_id = 2;
 
+SELECT user_id, product_id, notify_low_stock
+FROM user_product
+WHERE user_id = 1 AND product_id = 2;
+
 -- Query 8 --
+SELECT user_id, product_id, notify_low_stock
+FROM user_product
+WHERE user_id = 3 AND product_id = 5;
+
 DELETE FROM user_product
+WHERE user_id = 3 AND product_id = 5;
+
+SELECT user_id, product_id, notify_low_stock
+FROM user_product
 WHERE user_id = 3 AND product_id = 5;
 
 -- Query 9 --
@@ -67,19 +83,22 @@ AND pd.timestamp = (SELECT MAX(timestamp) FROM product_data WHERE product_id = p
 SELECT * FROM user_favorites_latest;
 
 -- Query 10 --
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
+
 START TRANSACTION;
 
 UPDATE user_product
 SET track_price = FALSE
 WHERE user_id = 2 AND product_id IN (1, 3, 5);
 
--- Simulate a condition; if something goes wrong
--- ROLLBACK;
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
 
-COMMIT;
+ROLLBACK;
 
-
-
-
-
-
+SELECT user_id, product_id, track_price
+FROM user_product
+WHERE user_id = 2 AND product_id IN (1, 3, 5);
